@@ -2,6 +2,7 @@ package net.everyevery;
 
 import java.lang.reflect.*;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class ClassChecksum {
@@ -9,15 +10,12 @@ public class ClassChecksum {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ClassChecksum.class);
 
     private static final char[] HEX_VALUES = "0123456789abcdef".toCharArray();
+    private static final String JAVA_PACKAGE = "java.";
 
-    private DigestAlgorithm digestAlgorithm = DigestAlgorithm.MD5;
-    private String targetPackage = "";
+    private MessageDigest messageDigest;
+    private String targetPackage;
     private Map<String,Set<String>> klassMap = new TreeMap<>();
 
-    private ClassChecksum(DigestAlgorithm digestAlgorithm, String targetPackage) {
-        this.digestAlgorithm = digestAlgorithm;
-        this.targetPackage = targetPackage;
-    }
 
     public static String checksum(Class<?>... klasses) {
         return checksum(new ClassChecksum(DigestAlgorithm.MD5, ""), klasses);
@@ -39,23 +37,35 @@ public class ClassChecksum {
         for (Class<?> klass : klasses) {
             classChecksum.update(klass);
         }
-        return classChecksum.generateDigestedString();
+        return classChecksum.digestedString();
     }
 
-    private String generateDigestedString() {
+    public ClassChecksum(DigestAlgorithm digestAlgorithm, String targetPackage) {
         try {
-            MessageDigest digest = MessageDigest.getInstance(digestAlgorithm.toString());
-            for (Map.Entry<String, Set<String>> entry : klassMap.entrySet()) {
-                String className = entry.getKey();
-                for (String location : entry.getValue()) {
-                    digest.update((className + location).getBytes());
-                }
-            }
-            return bytesToHex(digest.digest());
-        } catch (Exception e) {
-            e.printStackTrace();
+            this.messageDigest = MessageDigest.getInstance(digestAlgorithm.toString());
+        } catch (NoSuchAlgorithmException e) {
+            this.messageDigest = null;
         }
-        return null;
+        this.targetPackage = targetPackage;
+    }
+
+    public void reset() {
+        messageDigest.reset();
+        klassMap.clear();
+    }
+
+    public String digestedString() {
+        if (messageDigest == null) {
+            return "";
+        }
+
+        for (Map.Entry<String, Set<String>> entry : klassMap.entrySet()) {
+            String className = entry.getKey();
+            for (String location : entry.getValue()) {
+                messageDigest.update((className + location).getBytes());
+            }
+        }
+        return bytesToHex(messageDigest.digest());
     }
 
     private String getFieldProperties(Field field) {
@@ -65,7 +75,7 @@ public class ClassChecksum {
                 .append(field.getName()).toString();
     }
 
-    private void update(Type type) {
+    public void update(Type type) {
         if (type == null) {
             return;
         }
@@ -121,7 +131,7 @@ public class ClassChecksum {
     }
 
     private void saveClassItself(Class<?> klass) {
-        Set<String> newSet = new HashSet<>();
+        Set<String> newSet = new TreeSet<>();
         newSet.add(klass.getDeclaringClass() == null ? "." : klass.getDeclaringClass().getTypeName());
         klassMap.put(klass.getTypeName(), newSet);
     }
@@ -168,11 +178,15 @@ public class ClassChecksum {
     }
 
     private boolean isTargetClass(Class klass) {
-        return klass != null && klass.getTypeName().startsWith(targetPackage);
+        return klass != null
+                && !klass.getTypeName().startsWith("JAVA_PACKAGE")
+                && klass.getTypeName().startsWith(targetPackage);
     }
 
     private boolean isTargetClass(Type type) {
-        return type != null && type.getTypeName().startsWith(targetPackage);
+        return type != null
+                && !type.getTypeName().startsWith(JAVA_PACKAGE)
+                && type.getTypeName().startsWith(targetPackage);
     }
 
     private String getClassName(Field field) {

@@ -53,38 +53,38 @@ public class ClassChecksumTest {
     @Test
     public void testSimpleClassWithVariousFieldsAndMethods() throws Exception {
         String hashValue = ClassChecksum.checksum(new Class[]{SimpleClass.class});
-        assertEquals("65067852568df80bda119feaf7b84f6e", hashValue);
+        assertEquals("06f321001b48603d90eaf5fe19557835", hashValue);
     }
 
     @Test
     public void testSimpleInterface() throws Exception {
         String hashValue = ClassChecksum.checksum(new Class[]{SimpleInterface.class});
-        assertEquals("c2fd6c366758033dd0bd706d1b0318ae", hashValue);
+        assertEquals("586bb52ddbaa233abace9985243a35c2", hashValue);
     }
 
     @Test
     public void testSimpleWithParentAndInterface() throws Exception {
         String hashValue = ClassChecksum.checksum(new Class[]{SimpleWithParentAndInterface.class});
-        assertEquals("946edc0fec4d93f44bcf45ec0e5dfb62", hashValue);
+        assertEquals("2e40616ba518492ace342f6cffb8334c", hashValue);
     }
 
     @Test
     public void testGenericClass() throws Exception {
         String hashValue = ClassChecksum.checksum(new Class[]{GenericClass.class});
-        assertEquals("10846449b8a53390daab725e1a68a2c1", hashValue);
+        assertEquals("af55c62483b970977ba731a4a03028a4", hashValue);
     }
 
 
     @Test
     public void testChildClassOfGenericSuperAndInterfaces() throws Exception {
         String hashValue = ClassChecksum.checksum(new Class[]{ChildExtendsGenericClass.class});
-        assertEquals("f0f335340d27c67e1a247fe5446227de", hashValue);
+        assertEquals("c7d081b502c87ad45d8ae4cdd3e74bc0", hashValue);
     }
 
     @Test
     public void testSimpleClassWithEnum() throws Exception {
         String hashValue = ClassChecksum.checksum(new Class[]{SimpleClassWithEnum.class});
-        assertEquals("e2348c516b55159ec9ddbe1f860915eb", hashValue);
+        assertEquals("718401f558116e4cde6f20c038fac367", hashValue);
     }
 }
 
