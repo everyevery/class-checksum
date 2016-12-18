@@ -8,3 +8,16 @@ I make it to detect the change of class structure during app launching time. Alt
 
 * Package scope restriction
 * Support all java digest function (Default is MD5)
+
+# History
+
+## version 0.2
+
+* refactoring to class-base implementation
+* don't digest the classes of 'java.\*' packages
+
+## version 0.1
+
+* initial static utility implementation
+
+
