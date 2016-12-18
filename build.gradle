@@ -1,0 +1,17 @@
+group 'net.everyevery'
+version '0.1-RELEASE'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'org.slf4j:slf4j-simple:1.7.21'
+
+    testCompile 'junit:junit:4.12'
+}
