@@ -10,7 +10,11 @@ public class ClassChecksum {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ClassChecksum.class);
 
     private static final char[] HEX_VALUES = "0123456789abcdef".toCharArray();
-    private static final String JAVA_PACKAGE = "java.";
+    private static final String JAVA_PACKAGE = "java.lang";
+    private static final Set<Class> PRIMITIVE_TYPES =
+            new HashSet<Class>(){{
+                add(byte.class);add(short.class);add(int.class);add(long.class);
+                add(float.class); add(double.class);add(boolean.class);add(char.class);}};
 
     private MessageDigest messageDigest;
     private String targetPackage;
@@ -80,7 +84,7 @@ public class ClassChecksum {
             return;
         }
 
-        if (klassMap.containsKey(getClassName(type)) || !isTargetClass(type)) {
+        if (klassMap.containsKey(getClassName(type)) || !isTarget(type)) {
             return;
         }
 
@@ -101,11 +105,19 @@ public class ClassChecksum {
         }
     }
 
-    private void processClass(Class klass) {
-        if (klassMap.containsKey(klass.getTypeName())) {
-            return;
+    private boolean isTarget(Type type) {
+        if (type == null
+                || PRIMITIVE_TYPES.contains(type)
+                || type.getTypeName().startsWith(JAVA_PACKAGE)) {
+            return false;
         }
 
+        return type.getTypeName().startsWith(targetPackage)
+                || type.getTypeName().contains("<" + targetPackage)
+                || type.getTypeName().contains(" " + targetPackage);
+    }
+
+    private void processClass(Class klass) {
         saveClassItself(klass);
 
         update(klass.getGenericSuperclass());
@@ -175,18 +187,6 @@ public class ClassChecksum {
 
     private void saveField(Field field) {
         klassMap.get(field.getDeclaringClass()).add(getFieldProperties(field));
-    }
-
-    private boolean isTargetClass(Class klass) {
-        return klass != null
-                && !klass.getTypeName().startsWith("JAVA_PACKAGE")
-                && klass.getTypeName().startsWith(targetPackage);
-    }
-
-    private boolean isTargetClass(Type type) {
-        return type != null
-                && !type.getTypeName().startsWith(JAVA_PACKAGE)
-                && type.getTypeName().startsWith(targetPackage);
     }
 
     private String getClassName(Field field) {
