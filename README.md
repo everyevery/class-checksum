@@ -11,6 +11,11 @@ I make it to detect the change of class structure during app launching time. Alt
 
 # History
 
+## version 0.3
+
+* block java primitive types and java.lang types
+* fix multi type variable case
+
 ## version 0.2
 
 * refactoring to class-base implementation
